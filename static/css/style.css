@@ -1,0 +1,77 @@
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+    margin:0;
+    padding:0;
+}
+
+nav{
+    background:#333;
+    padding:15px;
+}
+
+nav a{
+    color:white;
+    text-decoration:none;
+    margin-right:15px;
+}
+
+.logo{
+    color:white;
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.container{
+    width:80%;
+    margin:20px auto;
+}
+
+.form-container{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.post-card,
+.profile-card,
+.user-card,
+.request-card{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.comment-box{
+    background:#f9f9f9;
+    padding:8px;
+    margin:5px 0;
+    border-radius:5px;
+}
+
+button{
+    padding:8px 15px;
+    cursor:pointer;
+}
+
+input,
+textarea{
+    width:100%;
+    padding:8px;
+    margin-top:5px;
+    margin-bottom:10px;
+    box-sizing:border-box;
+}
+
+img{
+    border-radius:50%;
+    object-fit:cover;
+}
+
+a{
+    text-decoration:none;
+}
