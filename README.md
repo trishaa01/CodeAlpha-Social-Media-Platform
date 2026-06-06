@@ -82,7 +82,7 @@ Social_media project/
 
 1. **Clone the repository**
 ```bash
-   git clone [https://github.com/your-username/your-repo-name.git](https://github.com/trishaa01/CodeAlpha-Social-Media-Platform
+   git clone [https://github.com/trishaa01/CodeAlpha-Social-Media-Platform.git]
    cd CodeAlpha Social Media Platform
 ```
 
@@ -105,7 +105,7 @@ Social_media project/
 
 http://127.0.0.1:8000
 
-### Optional — Create admin account
+###Admin Setup
 
 ```bash
 python manage.py createsuperuser
@@ -119,9 +119,3 @@ Then visit `http://127.0.0.1:8000/admin`
 
 **Trisha**
 - GitHub: [@trishaa01](https://github.com/trishaa01)
-
----
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
