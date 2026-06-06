@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Social Feed</h2>
+
+{% for post in posts %}
+
+<div class="post-card">
+
+    <h3>
+        <a href="{% url 'profile' post.user.username %}">
+            {{ post.user.username }}
+        </a>
+    </h3>
+
+    <p>{{ post.content }}</p>
+
+    <small>
+        {{ post.created_at }}
+    </small>
+
+    <br><br>
+
+    <a href="{% url 'like_post' post.id %}">
+        Like
+    </a>
+
+    |
+
+    <a href="{% url 'unlike_post' post.id %}">
+        Unlike
+    </a>
+
+    <p>
+        Likes: {{ post.total_likes }}
+        |
+        Comments: {{ post.total_comments }}
+    </p>
+
+    {% if request.user == post.user %}
+
+        <a href="{% url 'delete_post' post.id %}">
+            Delete Post
+        </a>
+
+    {% endif %}
+
+    <hr>
+
+    <h4>Comments</h4>
+
+    {% for comment in post.comments.all %}
+
+        <div class="comment-box">
+
+            <strong>
+                {{ comment.user.username }}
+            </strong>
+
+            {{ comment.text }}
+
+            {% if request.user == comment.user or request.user == post.user %}
+
+                <a href="{% url 'delete_comment' comment.id %}">
+                    Delete
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% empty %}
+
+        <p>No comments yet.</p>
+
+    {% endfor %}
+
+    <form
+        method="POST"
+        action="{% url 'add_comment' post.id %}"
+    >
+
+        {% csrf_token %}
+
+        {{ comment_form.as_p }}
+
+        <button type="submit">
+            Add Comment
+        </button>
+
+    </form>
+
+</div>
+
+<br>
+
+{% empty %}
+
+<p>No posts available.</p>
+
+{% endfor %}
+
+{% endblock %}

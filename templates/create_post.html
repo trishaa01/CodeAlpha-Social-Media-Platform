@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="form-container">
+
+    <h2>Create New Post</h2>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">
+            Post
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{% url 'feed' %}">
+        Back to Feed
+    </a>
+
+</div>
+
+{% endblock %}

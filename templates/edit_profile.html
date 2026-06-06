@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="form-container">
+
+    <h2>Edit Profile</h2>
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        {% csrf_token %}
+
+        <h3>User Information</h3>
+
+        {{ user_form.as_p }}
+
+        <h3>Profile Information</h3>
+
+        {{ profile_form.as_p }}
+
+        <button type="submit">
+            Save Changes
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{% url 'profile' request.user.username %}">
+        Back to Profile
+    </a>
+
+</div>
+
+{% endblock %}

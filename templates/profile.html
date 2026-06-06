@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="profile-card">
+
+    {% if profile.profile_picture %}
+
+        <img
+            src="{{ profile.profile_picture.url }}"
+            width="150"
+            height="150"
+            alt="Profile Picture"
+        >
+
+    {% endif %}
+
+    <h2>{{ profile_user.username }}</h2>
+
+    <p>{{ profile.bio }}</p>
+
+    {% if profile.is_private %}
+        <p>🔒 Private Account</p>
+    {% else %}
+        <p>🌍 Public Account</p>
+    {% endif %}
+
+    <p>
+        Followers: {{ followers_count }}
+        |
+        Following: {{ following_count }}
+    </p>
+
+    {% if is_owner %}
+
+        <a href="{% url 'edit_profile' %}">
+            Edit Profile
+        </a>
+
+    {% else %}
+
+        {% if is_follower %}
+
+            <a href="{% url 'unfollow_user' profile_user.username %}">
+                Unfollow
+            </a>
+
+        {% elif pending_request %}
+
+            <button disabled>
+                Request Sent
+            </button>
+
+        {% else %}
+
+            <a href="{% url 'follow_user' profile_user.username %}">
+                Follow
+            </a>
+
+        {% endif %}
+
+    {% endif %}
+
+</div>
+
+<hr>
+
+<h3>Posts</h3>
+
+{% if posts %}
+
+    {% for post in posts %}
+
+        <div class="post-card">
+
+            <p>{{ post.content }}</p>
+
+            <small>
+                {{ post.created_at }}
+            </small>
+
+            <br><br>
+
+            <p>
+                Likes: {{ post.total_likes }}
+                |
+                Comments: {{ post.total_comments }}
+            </p>
+
+        </div>
+
+        <br>
+
+    {% endfor %}
+
+{% else %}
+
+    {% if profile.is_private and not is_owner and not is_follower %}
+
+        <p>
+            This account is private.
+            Follow to view posts.
+        </p>
+
+    {% else %}
+
+        <p>No posts yet.</p>
+
+    {% endif %}
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Follow Requests</h2>
+
+{% for request in requests %}
+
+    <div class="request-card">
+
+        <strong>
+            {{ request.sender.username }}
+        </strong>
+
+        wants to follow you.
+
+        <br><br>
+
+        <a href="{% url 'accept_request' request.id %}">
+            Accept
+        </a>
+
+        |
+
+        <a href="{% url 'reject_request' request.id %}">
+            Reject
+        </a>
+
+    </div>
+
+    <br>
+
+{% empty %}
+
+    <p>No pending follow requests.</p>
+
+{% endfor %}
+
+{% endblock %}
