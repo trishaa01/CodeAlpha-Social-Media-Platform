@@ -1,249 +1,155 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
+from django.shortcuts import (
+    render,
+    redirect,
+    get_object_or_404
+)
+
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 
-from .forms import RegisterForm, UserUpdateForm, ProfileUpdateForm
-from .models import Profile, Follow, FollowRequest
-
-from posts.models import Post
+from .models import Post, Like, Comment
+from .forms import PostForm, CommentForm
 
 
-def register_view(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
+@login_required
+def feed(request):
 
-        if form.is_valid():
-            user = form.save()
+    posts = Post.objects.all().order_by(
+        '-created_at'
+    )
 
-            Profile.objects.create(user=user)
-
-            login(request, user)
-
-            return redirect('feed')
-    else:
-        form = RegisterForm()
+    comment_form = CommentForm()
 
     return render(
         request,
-        'register.html',
+        'feed.html',
+        {
+            'posts': posts,
+            'comment_form': comment_form
+        }
+    )
+
+
+@login_required
+def create_post(request):
+
+    if request.method == 'POST':
+
+        form = PostForm(request.POST)
+
+        if form.is_valid():
+
+            post = form.save(
+                commit=False
+            )
+
+            post.user = request.user
+
+            post.save()
+
+            return redirect('feed')
+
+    else:
+
+        form = PostForm()
+
+    return render(
+        request,
+        'create_post.html',
         {'form': form}
     )
 
 
 @login_required
-def profile_view(request, username):
+def delete_post(request, post_id):
 
-    profile_user = get_object_or_404(
-        User,
-        username=username
+    post = get_object_or_404(
+        Post,
+        id=post_id
     )
 
-    profile = profile_user.profile
+    if post.user == request.user:
+        post.delete()
 
-    is_owner = request.user == profile_user
-
-    is_follower = Follow.objects.filter(
-        follower=request.user,
-        following=profile_user
-    ).exists()
-
-    if profile.is_private and not is_owner and not is_follower:
-        posts = []
-    else:
-        posts = Post.objects.filter(
-            user=profile_user
-        ).order_by('-created_at')
-
-    followers_count = Follow.objects.filter(
-        following=profile_user
-    ).count()
-
-    following_count = Follow.objects.filter(
-        follower=profile_user
-    ).count()
-
-    pending_request = FollowRequest.objects.filter(
-        sender=request.user,
-        receiver=profile_user
-    ).exists()
-
-    context = {
-        'profile_user': profile_user,
-        'profile': profile,
-        'posts': posts,
-        'followers_count': followers_count,
-        'following_count': following_count,
-        'is_owner': is_owner,
-        'is_follower': is_follower,
-        'pending_request': pending_request,
-    }
-
-    return render(
-        request,
-        'profile.html',
-        context
-    )
+    return redirect('feed')
 
 
 @login_required
-def edit_profile(request):
+def like_post(request, post_id):
+
+    post = get_object_or_404(
+        Post,
+        id=post_id
+    )
+
+    Like.objects.get_or_create(
+        user=request.user,
+        post=post
+    )
+
+    return redirect('feed')
+
+
+@login_required
+def unlike_post(request, post_id):
+
+    post = get_object_or_404(
+        Post,
+        id=post_id
+    )
+
+    Like.objects.filter(
+        user=request.user,
+        post=post
+    ).delete()
+
+    return redirect('feed')
+
+
+@login_required
+def add_comment(request, post_id):
+
+    post = get_object_or_404(
+        Post,
+        id=post_id
+    )
 
     if request.method == 'POST':
 
-        user_form = UserUpdateForm(
-            request.POST,
-            instance=request.user
+        form = CommentForm(
+            request.POST
         )
 
-        profile_form = ProfileUpdateForm(
-            request.POST,
-            request.FILES,
-            instance=request.user.profile
-        )
+        if form.is_valid():
 
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-
-            return redirect(
-                'profile',
-                username=request.user.username
+            comment = form.save(
+                commit=False
             )
 
-    else:
-        user_form = UserUpdateForm(
-            instance=request.user
-        )
+            comment.user = request.user
+            comment.post = post
 
-        profile_form = ProfileUpdateForm(
-            instance=request.user.profile
-        )
+            comment.save()
 
-    return render(
-        request,
-        'edit_profile.html',
-        {
-            'user_form': user_form,
-            'profile_form': profile_form
-        }
-    )
+    return redirect('feed')
 
 
 @login_required
-def follow_user(request, username):
+def delete_comment(request, comment_id):
 
-    target_user = get_object_or_404(
-        User,
-        username=username
+    comment = get_object_or_404(
+        Comment,
+        id=comment_id
     )
 
-    if target_user == request.user:
-        return redirect(
-            'profile',
-            username=username
-        )
-
-    if target_user.profile.is_private:
-
-        FollowRequest.objects.get_or_create(
-            sender=request.user,
-            receiver=target_user
-        )
-
-    else:
-
-        Follow.objects.get_or_create(
-            follower=request.user,
-            following=target_user
-        )
-
-    return redirect(
-        'profile',
-        username=username
+    comment_owner = (
+        comment.user == request.user
     )
 
-
-@login_required
-def unfollow_user(request, username):
-
-    target_user = get_object_or_404(
-        User,
-        username=username
+    post_owner = (
+        comment.post.user == request.user
     )
 
-    Follow.objects.filter(
-        follower=request.user,
-        following=target_user
-    ).delete()
+    if comment_owner or post_owner:
+        comment.delete()
 
-    return redirect(
-        'profile',
-        username=username
-    )
-
-
-@login_required
-def follow_requests(request):
-
-    requests = FollowRequest.objects.filter(
-        receiver=request.user
-    )
-
-    return render(
-        request,
-        'requests.html',
-        {'requests': requests}
-    )
-
-
-@login_required
-def accept_request(request, request_id):
-
-    follow_request = get_object_or_404(
-        FollowRequest,
-        id=request_id,
-        receiver=request.user
-    )
-
-    Follow.objects.get_or_create(
-        follower=follow_request.sender,
-        following=follow_request.receiver
-    )
-
-    follow_request.delete()
-
-    return redirect('follow_requests')
-
-
-@login_required
-def reject_request(request, request_id):
-
-    follow_request = get_object_or_404(
-        FollowRequest,
-        id=request_id,
-        receiver=request.user
-    )
-
-    follow_request.delete()
-
-    return redirect('follow_requests')
-
-
-@login_required
-def search_users(request):
-
-    query = request.GET.get('q', '')
-
-    users = User.objects.filter(
-        username__icontains=query
-    ) if query else []
-
-    return render(
-        request,
-        'search.html',
-        {
-            'users': users,
-            'query': query
-        }
-    )
+    return redirect('feed')

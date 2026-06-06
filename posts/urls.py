@@ -1,75 +1,48 @@
 from django.urls import path
-from django.contrib.auth.views import LoginView, LogoutView
 
 from . import views
 
 urlpatterns = [
 
     path(
-        'register/',
-        views.register_view,
-        name='register'
+        '',
+        views.feed,
+        name='feed'
     ),
 
     path(
-        'login/',
-        LoginView.as_view(
-            template_name='login.html'
-        ),
-        name='login'
+        'create-post/',
+        views.create_post,
+        name='create_post'
     ),
 
     path(
-        'logout/',
-        LogoutView.as_view(),
-        name='logout'
+        'delete-post/<int:post_id>/',
+        views.delete_post,
+        name='delete_post'
     ),
 
     path(
-        'profile/<str:username>/',
-        views.profile_view,
-        name='profile'
+        'like/<int:post_id>/',
+        views.like_post,
+        name='like_post'
     ),
 
     path(
-        'edit-profile/',
-        views.edit_profile,
-        name='edit_profile'
+        'unlike/<int:post_id>/',
+        views.unlike_post,
+        name='unlike_post'
     ),
 
     path(
-        'follow/<str:username>/',
-        views.follow_user,
-        name='follow_user'
+        'comment/<int:post_id>/',
+        views.add_comment,
+        name='add_comment'
     ),
 
     path(
-        'unfollow/<str:username>/',
-        views.unfollow_user,
-        name='unfollow_user'
-    ),
-
-    path(
-        'follow-requests/',
-        views.follow_requests,
-        name='follow_requests'
-    ),
-
-    path(
-        'accept-request/<int:request_id>/',
-        views.accept_request,
-        name='accept_request'
-    ),
-
-    path(
-        'reject-request/<int:request_id>/',
-        views.reject_request,
-        name='reject_request'
-    ),
-
-    path(
-        'search/',
-        views.search_users,
-        name='search_users'
+        'delete-comment/<int:comment_id>/',
+        views.delete_comment,
+        name='delete_comment'
     ),
 ]

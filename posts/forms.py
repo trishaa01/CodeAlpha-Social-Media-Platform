@@ -1,52 +1,36 @@
 from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
 
-from .models import Profile
+from .models import Post, Comment
 
 
-class RegisterForm(UserCreationForm):
-
-    email = forms.EmailField(required=True)
+class PostForm(forms.ModelForm):
 
     class Meta:
-        model = User
+        model = Post
 
-        fields = [
-            'username',
-            'email',
-            'password1',
-            'password2'
-        ]
-
-
-class ProfileUpdateForm(forms.ModelForm):
-
-    class Meta:
-        model = Profile
-
-        fields = [
-            'bio',
-            'profile_picture',
-            'is_private'
-        ]
+        fields = ['content']
 
         widgets = {
-            'bio': forms.Textarea(
+            'content': forms.Textarea(
                 attrs={
                     'rows': 4,
-                    'placeholder': 'Write something about yourself...'
+                    'placeholder': "What's on your mind?"
                 }
             )
         }
 
 
-class UserUpdateForm(forms.ModelForm):
+class CommentForm(forms.ModelForm):
 
     class Meta:
-        model = User
+        model = Comment
 
-        fields = [
-            'username',
-            'email'
-        ]
+        fields = ['text']
+
+        widgets = {
+            'text': forms.TextInput(
+                attrs={
+                    'placeholder': 'Add a comment...'
+                }
+            )
+        }

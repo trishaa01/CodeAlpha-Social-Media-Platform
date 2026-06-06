@@ -1,18 +1,33 @@
 from django.contrib import admin
 
 from .models import (
-    Profile,
-    Follow,
-    FollowRequest
+    Post,
+    Like,
+    Comment
 )
 
 
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'id',
+        'user',
+        'created_at'
+    )
+
+    search_fields = (
+        'user__username',
+        'content'
+    )
+
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
 
     list_display = (
         'user',
-        'is_private'
+        'post'
     )
 
     search_fields = (
@@ -20,31 +35,16 @@ class ProfileAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(Follow)
-class FollowAdmin(admin.ModelAdmin):
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
 
     list_display = (
-        'follower',
-        'following',
+        'user',
+        'post',
         'created_at'
     )
 
     search_fields = (
-        'follower__username',
-        'following__username'
-    )
-
-
-@admin.register(FollowRequest)
-class FollowRequestAdmin(admin.ModelAdmin):
-
-    list_display = (
-        'sender',
-        'receiver',
-        'created_at'
-    )
-
-    search_fields = (
-        'sender__username',
-        'receiver__username'
+        'user__username',
+        'text'
     )

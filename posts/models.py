@@ -2,65 +2,64 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class Profile(models.Model):
-    user = models.OneToOneField(
+class Post(models.Model):
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE
     )
 
-    bio = models.TextField(blank=True)
+    content = models.TextField()
 
-    profile_picture = models.ImageField(
-        upload_to='profile_pics/',
-        default='default.jpg',
-        blank=True
+    created_at = models.DateTimeField(
+        auto_now_add=True
     )
 
-    is_private = models.BooleanField(default=False)
+    def total_likes(self):
+        return self.likes.count()
+
+    def total_comments(self):
+        return self.comments.count()
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} - {self.content[:30]}"
 
 
-class Follow(models.Model):
-    follower = models.ForeignKey(
+class Like(models.Model):
+    user = models.ForeignKey(
         User,
-        related_name='following',
         on_delete=models.CASCADE
     )
 
-    following = models.ForeignKey(
-        User,
-        related_name='followers',
+    post = models.ForeignKey(
+        Post,
+        related_name='likes',
         on_delete=models.CASCADE
     )
-
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('follower', 'following')
+        unique_together = ('user', 'post')
 
     def __str__(self):
-        return f"{self.follower} follows {self.following}"
+        return f"{self.user.username} liked Post {self.post.id}"
 
 
-class FollowRequest(models.Model):
-    sender = models.ForeignKey(
+class Comment(models.Model):
+    user = models.ForeignKey(
         User,
-        related_name='sent_requests',
         on_delete=models.CASCADE
     )
 
-    receiver = models.ForeignKey(
-        User,
-        related_name='received_requests',
+    post = models.ForeignKey(
+        Post,
+        related_name='comments',
         on_delete=models.CASCADE
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    text = models.TextField()
 
-    class Meta:
-        unique_together = ('sender', 'receiver')
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
-        return f"{self.sender} -> {self.receiver}"
+        return f"{self.user.username}: {self.text[:30]}"
