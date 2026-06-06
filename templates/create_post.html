@@ -1,27 +1,290 @@
 {% extends 'base.html' %}
 {% block title %}New Post — Connectly{% endblock %}
 
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  // ── Tab switching (Photo / Video) ──────────────────────
+  const tabs = document.querySelectorAll('.media-tab');
+  const photoArea = document.getElementById('photoArea');
+  const videoArea = document.getElementById('videoArea');
+  const imageInput = document.getElementById('id_image');
+  const videoInput = document.getElementById('id_video');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      const type = tab.dataset.type;
+      if (type === 'photo') {
+        photoArea.style.display = 'block';
+        videoArea.style.display = 'none';
+        videoInput.value = '';
+        clearPreview('videoPreview');
+      } else {
+        photoArea.style.display = 'none';
+        videoArea.style.display = 'block';
+        imageInput.value = '';
+        clearPreview('imagePreview');
+      }
+    });
+  });
+
+  // ── Image preview ──────────────────────────────────────
+  imageInput.addEventListener('change', () => {
+    showPreview(imageInput, 'imagePreview', 'image');
+  });
+
+  // ── Video preview ──────────────────────────────────────
+  videoInput.addEventListener('change', () => {
+    showPreview(videoInput, 'videoPreview', 'video');
+  });
+
+  function showPreview(input, previewId, type) {
+    const preview = document.getElementById(previewId);
+    const file = input.files[0];
+    if (!file) { clearPreview(previewId); return; }
+
+    const url = URL.createObjectURL(file);
+    if (type === 'image') {
+      preview.innerHTML = `
+        <div style="position:relative;display:inline-block">
+          <img src="${url}" style="max-width:100%;max-height:320px;border-radius:12px;display:block">
+          <button type="button" onclick="clearInput('id_image','imagePreview')"
+            style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">✕</button>
+        </div>`;
+    } else {
+      preview.innerHTML = `
+        <div style="position:relative">
+          <video src="${url}" controls style="max-width:100%;max-height:320px;border-radius:12px;display:block"></video>
+          <button type="button" onclick="clearInput('id_video','videoPreview')"
+            style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">✕</button>
+        </div>`;
+    }
+  }
+
+  function clearPreview(previewId) {
+    const el = document.getElementById(previewId);
+    if (el) el.innerHTML = '';
+  }
+
+  // Expose to inline onclick
+  window.clearInput = (inputId, previewId) => {
+    document.getElementById(inputId).value = '';
+    clearPreview(previewId);
+  };
+
+  // ── Drag-and-drop ──────────────────────────────────────
+  ['photoDropZone','videoDropZone'].forEach(zoneId => {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+    const isPhoto = zoneId === 'photoDropZone';
+
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const input = isPhoto ? imageInput : videoInput;
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    });
+  });
+
+  // ── Character counter ──────────────────────────────────
+  const textarea = document.getElementById('id_content');
+  const counter  = document.getElementById('charCounter');
+  if (textarea && counter) {
+    const update = () => {
+      const len = textarea.value.length;
+      counter.textContent = len;
+      counter.style.color = len > 450 ? 'var(--red)' : 'var(--ink-4)';
+    };
+    textarea.addEventListener('input', update);
+  }
+});
+</script>
+
+<style>
+.media-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  background: var(--bg-2);
+  padding: 4px;
+  border-radius: var(--radius-full);
+}
+
+.media-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.media-tab.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.media-tab svg { width: 16px; height: 16px; }
+
+.drop-zone {
+  border: 2px dashed var(--border-2);
+  border-radius: var(--radius-lg);
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--surface-2);
+}
+
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.drop-zone-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.drop-zone-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+
+.drop-zone-sub {
+  font-size: 12px;
+  color: var(--ink-4);
+  margin-bottom: 14px;
+}
+
+.char-counter-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-4);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="form-container" style="max-width:560px">
+
   <div class="page-header" style="margin-bottom:24px">
     <h1 class="page-title" style="font-size:26px">Create Post</h1>
-    <p class="page-subtitle">Share something with your network</p>
+    <p class="page-subtitle">Share a moment with your network</p>
   </div>
 
-  <form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
+  {% if form.errors %}
+    <div class="message error" style="margin-bottom:16px">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+      {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      {% for field in form %}{% for error in field.errors %}{{ field.label }}: {{ error }} {% endfor %}{% endfor %}
+    </div>
+  {% endif %}
 
-    <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Text content -->
+    <div style="margin-bottom:20px">
+      <label for="id_content" style="display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:6px;letter-spacing:0.02em;text-transform:uppercase">Caption</label>
+      <textarea
+        id="id_content"
+        name="content"
+        rows="4"
+        placeholder="What's on your mind?"
+        style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--surface-2);font-family:inherit;font-size:15px;color:var(--ink);resize:vertical;transition:var(--transition);line-height:1.6"
+        onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px var(--accent-glow)'"
+        onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
+      >{{ form.content.value|default:'' }}</textarea>
+      <div class="char-counter-wrap">
+        <span id="charCounter">0</span>/500
+      </div>
+    </div>
+
+    <!-- Media tabs -->
+    <div style="margin-bottom:20px">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:10px;letter-spacing:0.02em;text-transform:uppercase">Add Media <span style="font-weight:400;text-transform:none;color:var(--ink-4)">(optional)</span></label>
+
+      <div class="media-tabs">
+        <button type="button" class="media-tab active" data-type="photo">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+          Photo
+        </button>
+        <button type="button" class="media-tab" data-type="video">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+          Video
+        </button>
+      </div>
+
+      <!-- Photo area -->
+      <div id="photoArea">
+        <div id="photoDropZone" class="drop-zone" onclick="document.getElementById('id_image').click()">
+          <div class="drop-zone-icon">🖼️</div>
+          <div class="drop-zone-label">Click to upload or drag & drop</div>
+          <div class="drop-zone-sub">JPG, PNG, GIF, WEBP — max 10 MB</div>
+          <span class="btn btn-secondary" style="pointer-events:none;font-size:13px;padding:8px 18px">
+            Choose Photo
+          </span>
+        </div>
+        <input type="file" id="id_image" name="image" accept="image/*" style="display:none">
+        <div id="imagePreview" style="margin-top:12px"></div>
+      </div>
+
+      <!-- Video area -->
+      <div id="videoArea" style="display:none">
+        <div id="videoDropZone" class="drop-zone" onclick="document.getElementById('id_video').click()">
+          <div class="drop-zone-icon">🎬</div>
+          <div class="drop-zone-label">Click to upload or drag & drop</div>
+          <div class="drop-zone-sub">MP4, MOV, AVI, WEBM — max 50 MB</div>
+          <span class="btn btn-secondary" style="pointer-events:none;font-size:13px;padding:8px 18px">
+            Choose Video
+          </span>
+        </div>
+        <input type="file" id="id_video" name="video" accept="video/*" style="display:none">
+        <div id="videoPreview" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button type="submit" class="btn btn-primary">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
-        Publish
+        Publish Post
       </button>
       <a href="{% url 'feed' %}" class="btn btn-secondary">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-        Back to Feed
+        Cancel
       </a>
     </div>
+
   </form>
 </div>
 {% endblock %}
