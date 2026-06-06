@@ -119,3 +119,9 @@ Then visit `http://127.0.0.1:8000/admin`
 
 **Trisha**
 - GitHub: [@trishaa01](https://github.com/trishaa01)
+
+---
+
+## License
+
+This project is developed for educational purposes as part of the **CodeAlpha Internship Program**.
