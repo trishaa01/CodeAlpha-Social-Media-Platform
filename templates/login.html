@@ -1,30 +1,25 @@
 {% extends 'base.html' %}
+{% block title %}Login — Connectly{% endblock %}
 
 {% block content %}
-
 <div class="form-container">
+  <div class="form-logo">
+    <h1>Connectly</h1>
+    <p>Welcome back! Sign in to continue.</p>
+  </div>
 
-    <h2>Login</h2>
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary btn-full" style="margin-top:8px">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+      Sign In
+    </button>
+  </form>
 
-    <form method="POST">
-
-        {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit">
-            Login
-        </button>
-
-    </form>
-
-    <p>
-        Don't have an account?
-        <a href="{% url 'register' %}">
-            Register here
-        </a>
-    </p>
-
+  <p class="form-footer">
+    Don't have an account?
+    <a href="{% url 'register' %}">Create one →</a>
+  </p>
 </div>
-
 {% endblock %}

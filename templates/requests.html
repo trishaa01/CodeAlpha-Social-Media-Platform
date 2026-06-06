@@ -1,39 +1,45 @@
 {% extends 'base.html' %}
+{% block title %}Follow Requests — Connectly{% endblock %}
 
 {% block content %}
 
-<h2>Follow Requests</h2>
+<div class="page-header">
+  <h1 class="page-title">Follow Requests</h1>
+  <p class="page-subtitle">People who want to follow your private account</p>
+</div>
 
-{% for request in requests %}
-
-    <div class="request-card">
-
-        <strong>
-            {{ request.sender.username }}
-        </strong>
-
-        wants to follow you.
-
-        <br><br>
-
-        <a href="{% url 'accept_request' request.id %}">
-            Accept
-        </a>
-
-        |
-
-        <a href="{% url 'reject_request' request.id %}">
-            Reject
-        </a>
-
+{% for req in requests %}
+  <div class="request-card">
+    <div class="user-card-avatar" data-initials="{{ req.sender.username|slice:':1'|upper }}">
+      {% if req.sender.profile.profile_picture %}
+        <img src="{{ req.sender.profile.profile_picture.url }}" alt="{{ req.sender.username }}">
+      {% else %}
+        {{ req.sender.username|slice:':1'|upper }}
+      {% endif %}
     </div>
-
-    <br>
-
+    <div class="request-card-info">
+      <div class="request-card-name">
+        <a href="{% url 'profile' req.sender.username %}">{{ req.sender.username }}</a>
+      </div>
+      <div class="request-card-sub">wants to follow you · {{ req.created_at|timesince }} ago</div>
+    </div>
+    <div class="request-actions">
+      <a href="{% url 'accept_request' req.id %}" class="btn btn-teal" style="padding:8px 16px;font-size:13px">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+        Accept
+      </a>
+      <a href="{% url 'reject_request' req.id %}" class="btn btn-danger" style="padding:8px 16px;font-size:13px">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Decline
+      </a>
+    </div>
+  </div>
 {% empty %}
-
-    <p>No pending follow requests.</p>
-
+  <div class="empty-state">
+    <div class="empty-state-icon">🎉</div>
+    <h3 class="empty-state-title">All clear!</h3>
+    <p class="empty-state-text">No pending follow requests right now.</p>
+  </div>
 {% endfor %}
 
 {% endblock %}

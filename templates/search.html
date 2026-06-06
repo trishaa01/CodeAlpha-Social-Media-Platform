@@ -1,50 +1,62 @@
 {% extends 'base.html' %}
+{% block title %}Search — Connectly{% endblock %}
 
 {% block content %}
 
-<h2>Search Users</h2>
+<div class="page-header">
+  <h1 class="page-title">Find People</h1>
+  <p class="page-subtitle">Search for users by their username</p>
+</div>
 
-<form method="GET">
-
+<form method="GET" class="search-form">
+  <div class="search-input-wrap">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
     <input
-        type="text"
-        name="q"
-        placeholder="Search username..."
-        value="{{ query }}"
+      type="text"
+      name="q"
+      value="{{ query }}"
+      placeholder="Search by username…"
+      class="search-main-input"
+      autocomplete="off"
     >
-
-    <button type="submit">
-        Search
-    </button>
-
+  </div>
+  <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
-<hr>
-
 {% if query %}
-
-    <h3>Results</h3>
-
-    {% for user in users %}
-
-        <div class="user-card">
-
-            <a href="{% url 'profile' user.username %}">
-
-                {{ user.username }}
-
-            </a>
-
+  {% if users %}
+    <p class="page-subtitle" style="margin-bottom:16px">
+      {{ users|length }} result{{ users|length|pluralize }} for "<strong>{{ query }}</strong>"
+    </p>
+    {% for u in users %}
+      <a href="{% url 'profile' u.username %}" class="user-card" style="display:flex;text-decoration:none">
+        <div class="user-card-avatar" data-initials="{{ u.username|slice:':1'|upper }}">
+          {% if u.profile.profile_picture %}
+            <img src="{{ u.profile.profile_picture.url }}" alt="{{ u.username }}">
+          {% else %}
+            {{ u.username|slice:':1'|upper }}
+          {% endif %}
         </div>
-
-        <br>
-
-    {% empty %}
-
-        <p>No users found.</p>
-
+        <div class="user-card-info">
+          <div class="user-card-name">{{ u.username }}</div>
+          <div class="user-card-sub">View profile →</div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;color:var(--ink-4);flex-shrink:0;align-self:center"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+      </a>
     {% endfor %}
-
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">🔍</div>
+      <h3 class="empty-state-title">No users found</h3>
+      <p class="empty-state-text">No results for "<strong>{{ query }}</strong>". Try a different name.</p>
+    </div>
+  {% endif %}
+{% else %}
+  <div class="empty-state" style="padding:40px 24px">
+    <div class="empty-state-icon">👥</div>
+    <h3 class="empty-state-title">Search for people</h3>
+    <p class="empty-state-text">Type a username above to find and follow people.</p>
+  </div>
 {% endif %}
 
 {% endblock %}
