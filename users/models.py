@@ -12,8 +12,8 @@ class Profile(models.Model):
 
     profile_picture = models.ImageField(
         upload_to='profile_pics/',
-        default='default.jpg',
-        blank=True
+        blank=True,
+        null=True
     )
 
     is_private = models.BooleanField(default=False)
