@@ -16,7 +16,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
 
-            Profile.objects.create(user=user)
+            Profile.objects.get_or_create(user=user)
 
             login(request, user)
 
